@@ -1,12 +1,15 @@
 package com.topper.in.assignment;
 
 import android.app.ProgressDialog;
+import android.net.Uri;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +33,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements EventDetail.OnFragmentInteractionListener {
     public static JSONObject json = null;
     private String urlJsonObj = "https://hackerearth.0x10.info/api/toppr_events?type=json&query=list_events";
     private static String TAG = MainActivity.class.getSimpleName();
@@ -45,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mAdapter = new EventAdapter(movieList,MainActivity.this);
+        mAdapter = new EventAdapter(movieList, MainActivity.this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setAdapter(mAdapter);
@@ -99,18 +102,41 @@ public class MainActivity extends AppCompatActivity {
     public static void getdata(JSONObject objectdata) {
         try {
             JSONArray arraydata = objectdata.getJSONArray("websites");
-            for (int i = 0; i < arraydata.length();i++) {
-                JSONObject data=arraydata.getJSONObject(i);
+            for (int i = 0; i < arraydata.length(); i++) {
+                JSONObject data = arraydata.getJSONObject(i);
                 Event eventObject = new Event();
                 eventObject.setName(data.getString("name"));
                 eventObject.setCategory(data.getString("category"));
                 eventObject.setImage(data.getString("image"));
-                eventObject.setId(data.getString("id"));
+                eventObject.setId(i + "");
                 movieList.add(eventObject);
                 mAdapter.notifyDataSetChanged();
             }
         } catch (JSONException e) {
             Log.d("tl-2", "error" + e.toString());
         }
+    }
+
+    public void change(Eventdata ed) {
+        EventDetail eventdetail = EventDetail.newInstance(ed);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frame, eventdetail);
+        recyclerView.setVisibility(View.GONE);
+        transaction.commit();
+    }
+
+    public void onBackPressed() {
+        int count = getFragmentManager().getBackStackEntryCount();
+        if (count == 0) {
+            super.onBackPressed();
+            //additional code
+        } else {
+            getFragmentManager().popBackStack();
+        }
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }
